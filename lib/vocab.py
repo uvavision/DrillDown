@@ -2,7 +2,6 @@
 
 import nltk, pickle
 from collections import Counter
-from pycocotools.coco import COCO
 from visual_genome.local import get_all_image_data, get_all_region_descriptions
 import json, os, argparse
 import os.path as osp
