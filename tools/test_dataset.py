@@ -23,42 +23,12 @@ from datasets.loader import caption_loader, caption_collate_fn
 from datasets.loader import region_loader, region_collate_fn
 
 from datasets.vg import vg
-from datasets.coco import coco
 from visual_genome.local import save_scene_graphs_by_id, add_attrs_to_scene_graphs
-
-
-def test_coco_dataset(config):
-    traindb = coco(config, 'train')
-    valdb = coco(config, 'val')
-    testdb = coco(config, 'test')
-    restvaldb = coco(config, 'restval')
-
-
-    # image_ind_to_path = {}
-    # for x in traindb.scenedb:
-    #     image_ind_to_path[str(x['image_index'])] = traindb.color_path_from_index(x['image_index'])[1]
-    # for x in valdb.scenedb:
-    #     image_ind_to_path[str(x['image_index'])] = traindb.color_path_from_index(x['image_index'])[1]
-    # for x in testdb.scenedb:
-    #     image_ind_to_path[str(x['image_index'])] = traindb.color_path_from_index(x['image_index'])[1]
-    # for x in restvaldb.scenedb:
-    #     image_ind_to_path[str(x['image_index'])] = traindb.color_path_from_index(x['image_index'])[1]
-    # print(len(image_ind_to_path))
-    # for k, v in image_ind_to_path.items():
-    #     print(k, v)
-    #     break
-    # with open('image_data.json', 'w') as fid:
-    #     json.dump(image_ind_to_path, fid, indent=4, sort_keys=True)
     
 
 def test_vg_dataset(config):
     s = time()
     db = vg(config, 'train')
-    # entry = db.scenedb[2333842]
-    # print(entry['image_index'])
-    # for x in entry['regions']:
-    #     print(x.phrase.lower().encode('utf-8').decode('utf-8'))
-    print('time: ', time() - s)
 
 
 def test_caption_loader(config):
@@ -220,8 +190,8 @@ if __name__ == '__main__':
     # add_attrs_to_scene_graphs(data_dir='../data/vg/')
     # save_region_graphs_by_id()
     # save_scene_graphs_by_id(data_dir='../data/vg/', image_data_dir='../data/vg/by-id/')
-    # test_vg_dataset(config)
+    test_vg_dataset(config)
     # test_caption_loader(config)
-    test_region_loader(config)
+    # test_region_loader(config)
     # check_region_clses(config)
     # test_coco_dataset(config)

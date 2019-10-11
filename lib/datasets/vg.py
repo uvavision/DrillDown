@@ -47,6 +47,7 @@ class vg(object):
         for x in regions:
             c = x['phrase'].lower().encode('utf-8').decode('utf-8')
             if captions.get(c, None) is not None:
+                # ignore if the exact caption has appeared before
                 continue
             captions[c] = 1
             filtered_regions.append(x)
@@ -57,6 +58,7 @@ class vg(object):
         num = len(scenedb)
         for k, scene in scenedb.items():
             if len(scene['regions']) >= self.cfg.max_turns and len(scene['objects']) > 0:
+                # only consider images with at least #max_turns region annotations
                 filtered_scenedb[k] = scene
         num_after = len(filtered_scenedb)
         print('Filtered {} scenedb entries: {} -> {} '.format(num - num_after, num, num_after))
@@ -117,7 +119,10 @@ class vg(object):
                 sg = self.load_sg_annotation(image_index)
                 scenedb[image_index] = sg
             # sample negations
-            scenedb = self.sample_negative_objects(scenedb, self.cfg.max_turns//2+1)
+            # experiments on negation, could safely ignore
+            # I keep it here for now in case removing it will mess up the dataloader
+            if self.cfg.negation > 0:
+                scenedb = self.sample_negative_objects(scenedb, self.cfg.max_turns//2+1)
             with open(cache_file, 'wb') as fid:
                 pickle.dump(scenedb, fid, pickle.HIGHEST_PROTOCOL)
             print('wrote scenedb to {}'.format(cache_file))
@@ -135,7 +140,7 @@ class vg(object):
                     if not (obj['name'] in positive_names):
                         positive_names.append(obj['name'])
                         negative_objects[obj_id] = deepcopy(obj)
-            print('sample negative:', k)
+            # print('sample negative:', k)
             v['negative_objects'] = negative_objects
         return scenedb
                 
@@ -203,7 +208,6 @@ class vg(object):
             region_data = json.load(fid)
         regions = {}
         for r in self.filter_duplicate_regions(region_data['regions']):
-        # for r in region_data['regions']:
             regions[int(r['region_id'])] = r
         meta_regions = {}
         for k, current_region in regions.items():
@@ -217,6 +221,7 @@ class vg(object):
                 'caption': current_region['phrase'].lower().encode('utf-8').decode('utf-8')
             }
 
+            # Associate regions with objects and relations
             for o in current_region['objects']:
                 current_region_obj_idx = o['object_id']
                 if current_region_obj_idx in obj_dict:
@@ -234,15 +239,15 @@ class vg(object):
             'relations': rel_dict,
             'regions': meta_regions
         }
-        if image_index % 1000 == 0:
-            print(image_index, width, height, len(obj_dict), len(rel_dict), len(meta_regions))
-            obj_reg_lens = [len(v['regions']) for k, v in obj_dict.items()]
-            rel_reg_lens = [len(v['regions']) for k, v in rel_dict.items()]
-            if len(obj_reg_lens) > 0:
-                print('obj_reg_lens', np.mean(obj_reg_lens))
-            if len(rel_reg_lens) > 0:
-                print('rel_reg_lens', np.mean(rel_reg_lens))
-            print('------------------')
+        # if image_index % 1000 == 0:
+        #     print(image_index, width, height, len(obj_dict), len(rel_dict), len(meta_regions))
+        #     obj_reg_lens = [len(v['regions']) for k, v in obj_dict.items()]
+        #     rel_reg_lens = [len(v['regions']) for k, v in rel_dict.items()]
+        #     if len(obj_reg_lens) > 0:
+        #         print('obj_reg_lens', np.mean(obj_reg_lens))
+        #     if len(rel_reg_lens) > 0:
+        #         print('rel_reg_lens', np.mean(rel_reg_lens))
+        #     print('------------------')
         return scene
   
     def load_split(self, scenedb, split):
@@ -250,6 +255,7 @@ class vg(object):
         if osp.exists(cache_file):
             split_img_inds = list(np.loadtxt(cache_file, dtype=np.int32))
         else:
+            # As far as I remember the 'raw_test.txt' file contains images which were not used in Faster RCNN training
             all_image_inds = set([k for k, v in scenedb.items()])
             test_inds = set(list(np.loadtxt(osp.join(self.cache_dir, 'raw_test.txt'), dtype=np.int32)))
             rest_inds = list(all_image_inds.difference(test_inds))
