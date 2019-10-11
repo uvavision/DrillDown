@@ -141,7 +141,7 @@ def test_region_loader(config):
     print("Time", time() - start)
 
 
-def save_region_graphs_by_id(input_dir='../data/vg/', output_dir='../data/vg/region_graphs'):
+def save_region_graphs_by_id(input_dir='../data/vg/', output_dir='../data/vg/rg_jsons'):
     s = time()
     maybe_create(output_dir)
     file_path = osp.join(input_dir, 'region_graphs.json')
@@ -190,8 +190,8 @@ if __name__ == '__main__':
     # add_attrs_to_scene_graphs(data_dir='../data/vg/')
     # save_region_graphs_by_id()
     # save_scene_graphs_by_id(data_dir='../data/vg/', image_data_dir='../data/vg/by-id/')
-    test_vg_dataset(config)
+    # test_vg_dataset(config)
     # test_caption_loader(config)
-    # test_region_loader(config)
+    test_region_loader(config)
     # check_region_clses(config)
     # test_coco_dataset(config)

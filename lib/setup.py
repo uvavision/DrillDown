@@ -6,18 +6,6 @@ import numpy as np
 
 ext_modules = [
     Extension(
-        "nms.cpu_nms",
-        sources=["nms/cpu_nms.pyx"],
-        extra_compile_args=['-Wno-cpp', '-Wno-unused-function', '-std=c99'],
-        include_dirs = [np.get_include()]
-    ),
-    Extension(
-        "box_intersections_cpu.bbox",
-        sources=["box_intersections_cpu/bbox.pyx"],
-        extra_compile_args=['-Wno-cpp', '-Wno-unused-function', '-std=c99'],
-        include_dirs = [np.get_include()]
-    ),
-    Extension(
         'pycocotools._mask',
         sources=['pycocotools/maskApi.c', 'pycocotools/_mask.pyx'],
         extra_compile_args=['-Wno-cpp', '-Wno-unused-function', '-std=c99'],
