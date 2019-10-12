@@ -14,16 +14,16 @@ import torch.nn.functional as F
 
 
 class TIRGRNNCell(nn.Module):
-    def __init__(self, config, input_size, hidden_size):
+    def __init__(self, config, input_size, hidden_size, bias=True):
         super(TIRGRNNCell, self).__init__()
         self.cfg = config
         self.hidden_size = hidden_size
-        self.l1 = nn.Linear(input_size,  hidden_size)
-        self.l2 = nn.Linear(hidden_size, hidden_size)
-        self.l3 = nn.Linear(input_size,  hidden_size)
-        self.l4 = nn.Linear(hidden_size, hidden_size)
-        self.l5 = nn.Linear(input_size,  hidden_size)
-        self.l6 = nn.Linear(hidden_size, hidden_size)
+        self.l1 = nn.Linear(input_size,  hidden_size, bias=bias)
+        self.l2 = nn.Linear(hidden_size, hidden_size, bias=bias)
+        self.l3 = nn.Linear(input_size,  hidden_size, bias=bias)
+        self.l4 = nn.Linear(hidden_size, hidden_size, bias=bias)
+        self.l5 = nn.Linear(input_size,  hidden_size, bias=bias)
+        self.l6 = nn.Linear(hidden_size, hidden_size, bias=bias)
 
     def flatten_parameters(self):
         pass    

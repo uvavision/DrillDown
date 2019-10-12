@@ -17,7 +17,10 @@ class GroundingLoss(nn.Module):
         self.cfg = config
 
     def compute_pairwise_similarity(self, src_feats, src_masks, tgt_feats):
-        # attn: (bsize, tgt_len, nregions)
+        # src_feats: (bsize, src_len, feat_dim)
+        # src_masks: (bsize, src_len)
+        # tgt_feats: (bsize, tgt_len, feat_dim)
+        # attn: (bsize, tgt_len, src_len)
         attn = torch.bmm(tgt_feats, src_feats.transpose(1, 2)) * src_masks.unsqueeze(1)
         return attn
 
@@ -31,6 +34,9 @@ class GroundingLoss(nn.Module):
         return scores
 
     def compute_batch_mutual_similarity(self, img_feats, img_masks, txt_feats):
+        # img_feats: (bsize, nregions, feat_dim)
+        # img_masks: (bsize, nregions)
+        # txt_feats: (bsize, nturns, (ninsts), feat_dim)
         bsize, nregions, fsize = img_feats.size()
 
         if self.cfg.instance_dim > 1:
