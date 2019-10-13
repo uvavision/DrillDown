@@ -31,6 +31,8 @@ class RegionModel(nn.Module):
         for name, param in self.named_parameters():
             if 'bias' in name:
                 nn.init.constant_(param, 0.0)
+            elif param.dim() < 2:
+                nn.init.uniform_(param)
             elif 'weight' in name:
                 nn.init.xavier_uniform_(param)
 

@@ -299,39 +299,58 @@ class SoftContextEncoder(nn.Module):
             bias=False, 
             dilation=1)
         
-        self.z_gate = nn.Conv1d(
-            in_channels = 2 * self.cfg.n_feature_dim,
-            out_channels = self.cfg.n_feature_dim, 
-            kernel_size = 1, 
-            stride=1, 
-            padding=0, 
-            dilation=1, 
-            groups=1, 
-            bias=True)
+        # self.z_gate = nn.Conv1d(
+        #     in_channels = 2 * self.cfg.n_feature_dim,
+        #     out_channels = self.cfg.n_feature_dim, 
+        #     kernel_size = 1, 
+        #     stride=1, 
+        #     padding=0, 
+        #     dilation=1, 
+        #     groups=1, 
+        #     bias=True)
 
-        self.r_gate = nn.Conv1d(
-            in_channels = 2 * self.cfg.n_feature_dim,
-            out_channels = self.cfg.n_feature_dim, 
-            kernel_size = 1, 
-            stride=1, 
-            padding=0, 
-            dilation=1, 
-            groups=1, 
-            bias=True)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=2*self.cfg.n_feature_dim, 
+            nhead=4, 
+            dim_feedforward=self.cfg.n_feature_dim
+        )
 
-        self.u_gate = nn.Conv1d(
-            in_channels = 2 * self.cfg.n_feature_dim,
-            out_channels = self.cfg.n_feature_dim, 
-            kernel_size = 1, 
-            stride=1, 
-            padding=0, 
-            dilation=1, 
-            groups=1, 
-            bias=True)
+        self.z_gate = nn.Sequential(
+            nn.TransformerEncoder(encoder_layer=encoder_layer, num_layers=1),
+            nn.Linear(2*self.cfg.n_feature_dim, self.cfg.n_feature_dim)
+        )
+        self.r_gate = nn.Sequential(
+            nn.TransformerEncoder(encoder_layer=encoder_layer, num_layers=1),
+            nn.Linear(2*self.cfg.n_feature_dim, self.cfg.n_feature_dim)
+        )
+        self.u_gate = nn.Sequential(
+            nn.TransformerEncoder(encoder_layer=encoder_layer, num_layers=1),
+            nn.Linear(2*self.cfg.n_feature_dim, self.cfg.n_feature_dim)
+        )
+
+        # self.r_gate = nn.Conv1d(
+        #     in_channels = 2 * self.cfg.n_feature_dim,
+        #     out_channels = self.cfg.n_feature_dim, 
+        #     kernel_size = 1, 
+        #     stride=1, 
+        #     padding=0, 
+        #     dilation=1, 
+        #     groups=1, 
+        #     bias=True)
+
+        # self.u_gate = nn.Conv1d(
+        #     in_channels = 2 * self.cfg.n_feature_dim,
+        #     out_channels = self.cfg.n_feature_dim, 
+        #     kernel_size = 1, 
+        #     stride=1, 
+        #     padding=0, 
+        #     dilation=1, 
+        #     groups=1, 
+        #     bias=True)
 
     def init_hidden(self, bsize):
         if self.cfg.instance_dim > 1:
-            vhs = torch.zeros(bsize, self.cfg.n_feature_dim, self.cfg.instance_dim)
+            vhs = torch.zeros(bsize, self.cfg.instance_dim, self.cfg.n_feature_dim)
         else:
             vhs = torch.zeros(bsize, self.cfg.n_feature_dim)
         if self.cfg.cuda:
@@ -372,17 +391,22 @@ class SoftContextEncoder(nn.Module):
         for i in range(nturns):
             query_feats = txt_feats[:, i].unsqueeze(-1)
             projected_feats = self.project(query_feats)
-            # projected_feats: (bsize, fsize, ninsts)
-            prev_feats = torch.cat([current_hiddens, projected_feats], -2)
+            projected_feats = projected_feats.transpose(1,2)
+            # projected_feats: (bsize, ninsts, fsize)
+            prev_feats = torch.cat([current_hiddens, projected_feats], -1)
+            # print(i, 'prev_feats.size()',prev_feats.size())
             z_t = torch.sigmoid(self.z_gate(prev_feats))
+            # print(i, 'z_t.size()',z_t.size())
             r_t = torch.sigmoid(self.r_gate(prev_feats))
-            hhat_t = torch.cat([r_t * current_hiddens, projected_feats], -2) 
+            # print(i, 'r_t.size()',r_t.size())
+            hhat_t = torch.cat([r_t * current_hiddens, projected_feats], -1) 
+            # print(i, 'hhat_t.size()',hhat_t.size())
             hhat_t = torch.tanh(self.u_gate(hhat_t))
             next_hiddens = (1 - z_t) * current_hiddens + z_t * hhat_t
             output_feats.append(next_hiddens)
             current_hiddens = next_hiddens
         
         output_feats = torch.stack(output_feats, 1)         
-        return output_feats.transpose(-2, -1), next_hiddens.transpose(-2, -1), None, None
+        return output_feats, next_hiddens, None, None
         
         
