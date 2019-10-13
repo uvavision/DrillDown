@@ -103,7 +103,7 @@ class ContextEncoder(nn.Module):
 
     def forward(self, scene_inds, 
         txt_feats, txt_masks, hiddens, 
-        src_feats, src_masks, 
+        src_feats, src_masks, # in case we'd like to try using image contexts as input 
         tgt_feats, tgt_masks,
         sample_mode):
         """
@@ -162,7 +162,10 @@ class ContextEncoder(nn.Module):
                                 instance_inds = ((i%self.cfg.instance_dim) * query_feats.new_ones(bsize)).long()
                                 logits = instance_inds.new_ones(bsize, self.cfg.instance_dim).float()
                             else:
-                                instance_inds, logits = self.policy(query_feats.detach(), current_hiddens.detach(), sample_mode)
+                                instance_inds, logits = self.policy(
+                                    query_feats.detach(), 
+                                    current_hiddens.detach(), 
+                                    sample_mode)
                         elif sample_mode == 5:
                             instance_inds, rewards = \
                                 self.rollout_search(
@@ -279,3 +282,107 @@ class ContextEncoder(nn.Module):
             
             return instance_inds, rewards
 
+
+class SoftContextEncoder(nn.Module):
+    def __init__(self, config):
+        super(SoftContextEncoder, self).__init__()
+        self.cfg = config
+
+        self.project = nn.ConvTranspose1d(
+            in_channels=self.cfg.n_feature_dim, 
+            out_channels = self.cfg.n_feature_dim, 
+            kernel_size = self.cfg.instance_dim, 
+            stride=1, 
+            padding=0, 
+            output_padding=0, 
+            groups=1, 
+            bias=False, 
+            dilation=1)
+        
+        self.z_gate = nn.Conv1d(
+            in_channels = 2 * self.cfg.n_feature_dim,
+            out_channels = self.cfg.n_feature_dim, 
+            kernel_size = 1, 
+            stride=1, 
+            padding=0, 
+            dilation=1, 
+            groups=1, 
+            bias=True)
+
+        self.r_gate = nn.Conv1d(
+            in_channels = 2 * self.cfg.n_feature_dim,
+            out_channels = self.cfg.n_feature_dim, 
+            kernel_size = 1, 
+            stride=1, 
+            padding=0, 
+            dilation=1, 
+            groups=1, 
+            bias=True)
+
+        self.u_gate = nn.Conv1d(
+            in_channels = 2 * self.cfg.n_feature_dim,
+            out_channels = self.cfg.n_feature_dim, 
+            kernel_size = 1, 
+            stride=1, 
+            padding=0, 
+            dilation=1, 
+            groups=1, 
+            bias=True)
+
+    def init_hidden(self, bsize):
+        if self.cfg.instance_dim > 1:
+            vhs = torch.zeros(bsize, self.cfg.n_feature_dim, self.cfg.instance_dim)
+        else:
+            vhs = torch.zeros(bsize, self.cfg.n_feature_dim)
+        if self.cfg.cuda:
+            vhs = vhs.cuda()
+        return vhs
+
+    def forward(self, scene_inds, 
+        txt_feats, txt_masks, hiddens, 
+        src_feats, src_masks, # in case we'd like to try using image contexts as input 
+        tgt_feats, tgt_masks,
+        sample_mode):
+        """
+        Args:
+            - **scene_inds** (bsize, )
+            - **txt_feats**  (bsize, nturns, n_feature_dim)
+            - **txt_masks**  (bsize, nturns)
+            - **hiddens**    (num_layers, bsize, n_feature_dim)
+            - **src_feats**  (bsize, nturns, nregions, n_feature_dim)
+            - **src_masks**  (bsize, nturns, nregions)
+            - **tgt_feats**  (bsize, nturns, nregions, n_feature_dim)
+            - **tgt_masks**  (bsize, nturns, nregions)
+            - **sample_mode**
+                0: top1
+                1: multinomial sampling
+                2: circular
+                3: fixed indices
+                4: random
+                5: rollout greedy search
+        Returns
+            - **output_feats** (bsize, nturns, (ninsts), n_feature_dim)
+            - **next_hiddens** (num_layers, bsize, n_feature_dim)
+            - **sample_logits** (bsize, nturns)
+            - **sample_indices** (bsize, nturns)
+        """
+        output_feats = []
+        bsize, nturns, fsize = txt_feats.size()
+        current_hiddens = hiddens
+        for i in range(nturns):
+            query_feats = txt_feats[:, i].unsqueeze(-1)
+            projected_feats = self.project(query_feats)
+            # projected_feats: (bsize, fsize, ninsts)
+            prev_feats = torch.cat([current_hiddens, projected_feats], -2)
+            z_t = torch.sigmoid(self.z_gate(prev_feats))
+            r_t = torch.sigmoid(self.r_gate(prev_feats))
+            hhat_t = torch.cat([r_t * current_hiddens, projected_feats], -2) 
+            hhat_t = torch.tanh(self.u_gate(hhat_t))
+            next_hiddens = (1 - z_t) * current_hiddens + z_t * hhat_t
+            output_feats.append(next_hiddens)
+            current_hiddens = next_hiddens
+        
+        output_feats = torch.stack(output_feats, 1)         
+        return output_feats.transpose(-2, -1), next_hiddens.transpose(-2, -1), None, None
+        
+        

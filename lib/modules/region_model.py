@@ -6,7 +6,7 @@ import numpy as np
 
 from modules.text_encoder import TextEncoder
 from modules.region_encoder import RegionEncoder
-from modules.context_encoder import ContextEncoder
+from modules.context_encoder import ContextEncoder, SoftContextEncoder
 
 from utils import *
 
@@ -21,7 +21,10 @@ class RegionModel(nn.Module):
         self.cfg = config
         self.txt_enc = TextEncoder(self.cfg)
         self.img_enc = RegionEncoder(self.cfg)
-        self.ctx_enc = ContextEncoder(self.cfg)
+        if self.cfg.use_soft_ctx_encoder:
+            self.ctx_enc = SoftContextEncoder(self.cfg)
+        else:
+            self.ctx_enc = ContextEncoder(self.cfg)
         self.init_weights()
 
     def init_weights(self):
