@@ -35,6 +35,8 @@ class RegionEncoder(nn.Module):
     def forward(self, region_feats, region_clses):
         img_feats = self.project(region_feats)
         if self.cfg.subspace_alignment_mode > 0:
+            # The subspace alignment module is inspired by Conditional Similarity Net
+            # But, can be ignored as it does not help
             masks = self.subspace_masking(region_clses)
             if self.cfg.subspace_alignment_mode == 1:
                 masks = F.softmax(self.cfg.temperature_lambda * masks, dim=-1)

@@ -65,7 +65,7 @@ class RegionModel(nn.Module):
         ###########################################################################################
         # encoding context
         first_hidden = self.ctx_enc.init_hidden(lang_feats.size(0))
-        src_feats = None 
+        src_feats = None # Image Context, can be ignored as it does not help 
         tgt_feats = masked_feats if self.cfg.subspace_alignment_mode > 0 else img_feats
         txt_feats, _, sample_logits, sample_indices = \
             self.ctx_enc(scene_inds, lang_feats, lang_masks, first_hidden, 
