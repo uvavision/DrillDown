@@ -91,6 +91,7 @@ class GroundingLoss(nn.Module):
         return similarities
 
     def contrastive_loss(self, scores):
+        # scores: (bsize, bsize)
         bsize, _ = scores.size()
         diagonal = scores.diag().view(bsize, 1)
         d1 = diagonal.expand_as(scores)
