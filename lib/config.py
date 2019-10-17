@@ -17,14 +17,14 @@ parser = argparse.ArgumentParser()
 # To be tuned
 ##################################################################
 parser.add_argument('--use_txt_context', type=str2bool, default=False)
-parser.add_argument('--n_feature_dim', type=int, default=256)
-parser.add_argument('--instance_dim',  type=int, default=3)
-parser.add_argument('--rl_finetune',   type=int, default=0)
-parser.add_argument('--policy_mode',   type=int, default=0)
-parser.add_argument('--explore_mode',  type=int, default=2)
+parser.add_argument('--n_feature_dim', type=int, default=256, help='dimension of the image and language features')
+parser.add_argument('--instance_dim',  type=int, default=1, help='state dimensions')
+parser.add_argument('--rl_finetune',   type=int, default=0, help='reinforced mode')
+parser.add_argument('--policy_mode',   type=int, default=0, help='policy mode')
+parser.add_argument('--explore_mode',  type=int, default=2, help='explore mode')
 parser.add_argument('--final_loss_mode', type=int, default=0)
 parser.add_argument('--policy_weight', type=float, default=0.1)
-parser.add_argument('--l2_norm', type=str2bool, default=True)
+parser.add_argument('--l2_norm', type=str2bool, default=True, help='whether to normalize the feature vectors')
 parser.add_argument('--subspace_alignment_mode', type=int, default=0)
 parser.add_argument('--loss_reduction_mode', type=int, default=1)
 parser.add_argument('--sim_reduction_mode', type=int, default=2)
@@ -46,7 +46,7 @@ parser.add_argument('--color_size', default=[224, 224])
 parser.add_argument('--visu_size',  default=[500, 500])
 parser.add_argument('--vocab_size', type=int, default=14284)
 parser.add_argument('--max_turns',  type=int, default=10)
-parser.add_argument('--n_categories', type=int, default=1601)
+parser.add_argument('--n_categories', type=int, default=1601, help='object categories from VG')
 parser.add_argument('--rank_batch_size', type=int, default=1000)
 
 
@@ -54,7 +54,6 @@ parser.add_argument('--rank_batch_size', type=int, default=1000)
 # Data
 ##################################################################
 parser.add_argument('--pixel_means', nargs='+', type=int, default=[103.53, 116.28, 123.675])
-parser.add_argument('--filter_scenes', type=str2bool, default=False)
 parser.add_argument('--min_area_size', type=float, default=0.001)
 
 
@@ -71,8 +70,7 @@ parser.add_argument('--UNK_idx', type=int, default=3)
 # Model
 ##################################################################
 parser.add_argument('--max_violation',   type=str2bool, default=True)
-parser.add_argument('--use_img_context', type=str2bool, default=False)
-parser.add_argument('--n_nntable_trees', type=int, default=200)
+parser.add_argument('--use_img_context', type=str2bool, default=False, help='whether to use image contexts')
 parser.add_argument('--attn_type', type=str, default='general')
 
 

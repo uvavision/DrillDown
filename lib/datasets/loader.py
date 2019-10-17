@@ -19,6 +19,99 @@ from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
 
+class paragraph_loader(Dataset):
+    """
+    Concatenate the "captions" into a "paragraph"
+    Image representation: region features
+    Text representation: paragraph
+    """
+    def __init__(self, imdb):
+        self.cfg = imdb.cfg
+        self.db = imdb
+        
+    def __len__(self):
+        return len(self.db.scenedb)
+
+    def __getitem__(self, scene_index):
+        scene = self.db.scenedb[scene_index]
+        image_index = scene['image_index']
+
+        # region features
+        region_path = self.db.region_path_from_index(image_index)
+        with open(region_path, 'rb') as fid:
+            regions = pickle.load(fid, encoding='latin1')
+        region_boxes = torch.from_numpy(regions['region_boxes']).float()
+        region_feats = torch.from_numpy(regions['region_feats']).float()
+        region_clses = torch.from_numpy(regions['region_clses']).long()
+
+        # captions
+        if self.db.name == 'coco':
+            all_captions = scene['captions']
+        else:
+            all_meta_regions = [scene['regions'][x] for x in sorted(list(scene['regions'].keys()))]
+            all_captions = [x['caption'] for x in all_meta_regions]
+
+        width = scene['width']; height = scene['height']
+        if self.db.split in ['val', 'test']:
+            captions = ';'.join(all_captions[:self.cfg.max_turns])
+        else:
+            num_captions = len(all_captions)
+            caption_inds = np.random.permutation(range(num_captions))
+            captions = ';'.join([all_captions[x] for x in caption_inds[:self.cfg.max_turns]])
+        
+        tokens = [w for w in word_tokenize(captions)]
+        word_inds = [self.db.lang_vocab(w) for w in tokens]
+        word_inds.append(self.cfg.EOS_idx)
+        sent_inds = torch.Tensor(word_inds)
+        return sent_inds, captions, region_boxes, region_feats, region_clses, width, height, image_index, scene_index
+
+
+def paragraph_collate_fn(data):
+    sent_inds, captions, region_boxes, region_feats, region_clses, width, height, image_indices, scene_indices = zip(*data)
+    
+    # regions
+    lengths = [region_boxes[i].size(0) for i in range(len(region_boxes))]
+    max_length = max(lengths)
+
+    new_region_boxes  = torch.zeros(len(region_boxes), max_length, region_boxes[0].size(-1)).float()
+    new_region_feats  = torch.zeros(len(region_feats), max_length, region_feats[0].size(-1)).float()
+    new_region_clses  = torch.zeros(len(region_clses), max_length).long()
+    new_region_masks  = torch.zeros(len(region_clses), max_length).long()
+
+    for i in range(len(region_boxes)):
+        end = region_boxes[i].size(0)
+        new_region_boxes[i, :end] = region_boxes[i]
+        new_region_feats[i, :end] = region_feats[i]
+        new_region_clses[i, :end] = region_clses[i]
+        new_region_masks[i, :end] = 1.0
+
+    # captions
+    lengths = [len(sent_inds[i]) for i in range(len(sent_inds))]
+    max_length = max(lengths)
+    new_sent_inds = torch.zeros(len(sent_inds), max_length).long()
+    new_sent_msks = torch.zeros(len(sent_inds), max_length).long()
+    for i in range(len(sent_inds)):
+        end = len(sent_inds[i])
+        new_sent_inds[i, :end] = sent_inds[i]
+        new_sent_msks[i, :end] = 1
+
+    entry = {
+            'region_boxes': new_region_boxes,
+            'region_feats': new_region_feats,
+            'region_masks': new_region_masks,
+            'region_clses': new_region_clses,
+            'sent_inds': new_sent_inds, 
+            'sent_msks': new_sent_msks, 
+            'captions': captions,
+            'widths': width,
+            'heights': height,
+            'image_inds': image_indices,
+            'scene_inds': torch.Tensor(scene_indices)
+            }
+    
+    return entry
+
+
 class caption_loader(Dataset):
     def __init__(self, imdb):
         self.cfg = imdb.cfg

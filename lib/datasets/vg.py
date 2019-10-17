@@ -119,8 +119,8 @@ class vg(object):
                 sg = self.load_sg_annotation(image_index)
                 scenedb[image_index] = sg
             # sample negations
-            # experiments on negation, could safely ignore
-            # I keep it here for now in case removing it will mess up the dataloader
+            # experiments on negation, could ignore
+            # I keep it here for now in case removing it will mess up other parts of the codes (e.g. dataloader)
             if self.cfg.negation > 0:
                 scenedb = self.sample_negative_objects(scenedb, self.cfg.max_turns//2+1)
             with open(cache_file, 'wb') as fid:
@@ -255,7 +255,9 @@ class vg(object):
         if osp.exists(cache_file):
             split_img_inds = list(np.loadtxt(cache_file, dtype=np.int32))
         else:
-            # As far as I remember the 'raw_test.txt' file contains images which were not used in Faster RCNN training
+            # As far as I remember the 'raw_test.txt' file contains images from the test set of the work:
+            # "Bottom-Up and Top-Down Attention for Image Captioning and Visual Question Answering",
+            # which were not used in Faster RCNN training
             all_image_inds = set([k for k, v in scenedb.items()])
             test_inds = set(list(np.loadtxt(osp.join(self.cache_dir, 'raw_test.txt'), dtype=np.int32)))
             rest_inds = list(all_image_inds.difference(test_inds))

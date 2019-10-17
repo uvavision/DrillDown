@@ -21,6 +21,7 @@ from utils import *
 from vocab import Vocabulary
 from datasets.loader import caption_loader, caption_collate_fn
 from datasets.loader import region_loader, region_collate_fn
+from datasets.loader import paragraph_loader, paragraph_collate_fn
 
 from datasets.vg import vg
 from visual_genome.local import save_scene_graphs_by_id, add_attrs_to_scene_graphs
@@ -141,6 +142,79 @@ def test_region_loader(config):
     print("Time", time() - start)
 
 
+def test_paragraph_loader(config):
+    db = vg(config, 'train')
+    # db = coco(config, 'train')
+    loaddb = paragraph_loader(db)
+    loader = DataLoader(loaddb,
+        batch_size=config.batch_size,
+        shuffle=True, num_workers=config.num_workers, collate_fn=paragraph_collate_fn)
+
+    output_dir = osp.join(config.model_dir, 'test_region_loader')
+    maybe_create(output_dir)
+    
+
+    start = time()
+    plt.switch_backend('agg')
+    for cnt, batched in enumerate(loader):
+        # print('scene_inds', batched['scene_inds'])
+        sent_inds = batched['sent_inds'].long()
+        sent_msks = batched['sent_msks'].long()
+        widths  = batched['widths']
+        heights = batched['heights']
+
+        captions = batched['captions']
+        region_boxes = batched['region_boxes'].float()
+        region_feats = batched['region_feats'].float()
+        region_clses = batched['region_clses'].long()
+        region_masks = batched['region_masks'].long()
+
+        print('sent_inds', sent_inds.size())
+        print('sent_msks', sent_msks.size())
+        print('region_boxes', region_boxes.size())
+        print('region_feats', region_feats.size())
+        print('region_clses', region_clses.size())
+        print('region_masks', region_masks.size())
+        print('clses', torch.min(region_clses), torch.max(region_clses))
+        # print('widths', widths)
+        # print('heights', heights)
+
+        for i in range(len(sent_inds)):
+            # print('####')
+            # print(len(captions), len(captions[0]))
+            entry = {}
+            image_index = batched['image_inds'][i]
+            entry['width'] = widths[i]
+            entry['height'] = heights[i]
+            nr = torch.sum(region_masks[i])
+            entry['region_boxes'] = xyxys_to_xywhs(region_boxes[i,:nr].cpu().data.numpy())
+
+            color = cv2.imread(db.color_path_from_index(image_index), cv2.IMREAD_COLOR)
+            color, _, _ = create_squared_image(color)
+            
+            out_path = osp.join(output_dir, '%d.png'%image_index)
+            layouts = db.render_regions_as_output(entry, bg=cv2.resize(color, (config.visu_size[0], config.visu_size[0]))[:,:,::-1])
+            
+            fig = plt.figure(figsize=(32, 16))
+            cap = captions[i] + '\n'
+            sid = ' '.join([str(x.data.item()) for x in sent_inds[i]])
+            plt.suptitle(cap + sid)
+            for j in range(min(14, len(layouts))):
+                plt.subplot(3, 5, j+1)
+                plt.imshow(layouts[j].astype(np.uint8))
+                plt.axis('off')
+            plt.subplot(3, 5, 15)
+            plt.imshow(color[:,:,::-1])
+            plt.axis('off')
+            fig.savefig(out_path, bbox_inches='tight')
+            plt.close(fig)
+
+        print('------------------')
+        if cnt == 2:
+            break
+    print("Time", time() - start)
+
+
 def save_region_graphs_by_id(input_dir='../data/vg/', output_dir='../data/vg/rg_jsons'):
     s = time()
     maybe_create(output_dir)
@@ -192,6 +266,7 @@ if __name__ == '__main__':
     # save_scene_graphs_by_id(data_dir='../data/vg/', image_data_dir='../data/vg/by-id/')
     # test_vg_dataset(config)
     # test_caption_loader(config)
-    test_region_loader(config)
+    # test_region_loader(config)
+    test_paragraph_loader(config)
     # check_region_clses(config)
     # test_coco_dataset(config)
