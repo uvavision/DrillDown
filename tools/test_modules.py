@@ -27,6 +27,7 @@ from modules.grounding_loss import GroundingLoss
 #######################################################################
 from modules.image_model import ImageModel
 from modules.region_model import RegionModel
+from modules.paragraph_model import ParagraphModel
 from modules.image_hred_model import ImageHREDModel
 from modules.region_grounding_model import RegionGroundingModel
 #######################################################################
@@ -38,6 +39,7 @@ from torch.utils.data import DataLoader
 from datasets.vg import vg
 from datasets.loader import region_loader, region_collate_fn
 from datasets.loader import caption_loader, caption_collate_fn
+from datasets.loader import paragraph_loader, paragraph_collate_fn
 
 
 def test_attention(config):
@@ -171,6 +173,40 @@ def test_grounding_loss(config):
         print('losses', losses.size())
         break
 
+def test_paragraph_model(config):
+    db = vg(config, 'test')
+    loaddb = paragraph_loader(db)
+    loader = DataLoader(loaddb, batch_size=3*config.batch_size,
+        shuffle=True, num_workers=config.num_workers,
+        collate_fn=paragraph_collate_fn)
+
+    net = ParagraphModel(config)
+    net.train()
+    
+    for name, param in net.named_parameters():
+        print(name, param.size())
+
+    for cnt, batched in enumerate(loader):
+        start = time()
+        scene_inds = batched['scene_inds'].long()[:config.batch_size]
+        sent_inds = batched['sent_inds'].long()[:config.batch_size]
+        sent_msks = batched['sent_msks'].long()[:config.batch_size]
+        region_feats = batched['region_feats'].float()[:config.batch_size]
+        region_clses = batched['region_clses'].long()[:config.batch_size]
+        region_masks = batched['region_masks'].float()[:config.batch_size]
+
+        img_feats, txt_feats = net(sent_inds, sent_msks, region_feats, region_clses, region_masks)
+        print('sent_inds', sent_inds.size())
+        print('sent_msks', sent_msks.size())
+        print('region_feats', region_feats.size())
+        print('region_clses', region_clses.size())
+        print('region_masks', region_masks.size())
+
+        print('img_feats', img_feats.size())
+        print('txt_feats', txt_feats.size())
+        print('time:', time() - start)
+        break
+
 
 def test_region_model(config):
     db = vg(config, 'test')
@@ -299,7 +335,8 @@ if __name__ == '__main__':
     # test_softmax_rnn(config)
     # test_image_model(config)
     # test_region_model(config)
-    test_region_grounding_model(config)
+    # test_region_grounding_model(config)
+    test_paragraph_model(config)
     # test_image_hred_model(config)
     # test_region_encoder(config)
     # test_image_encoder(config)
