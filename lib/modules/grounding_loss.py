@@ -63,7 +63,7 @@ class GroundingLoss(nn.Module):
             similarities = reduce_similarities(similarities, sim_masks, self.cfg.sim_reduction_mode)
         else:
             similarities = similarities.view(bsize, bsize, nturns)
-        return similarities
+        return similarities # (bsize, bsize, nturns)
 
     def debug_compute_batch_mutual_similarity(self, img_feats, img_masks, txt_feats):
         bsize, nregions, fsize = img_feats.size()
