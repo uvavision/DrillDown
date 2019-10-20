@@ -33,6 +33,7 @@ parser.add_argument('--lse_lambda', type=float, default=20)
 parser.add_argument('--negation', type=int, default=0)
 parser.add_argument('--tirg_rnn', type=str2bool, default=True)
 parser.add_argument('--use_soft_ctx_encoder', type=str2bool, default=False)
+parser.add_argument('--paragraph_model', type=str2bool, default=False)
 
 parser.add_argument('--cut_off_steps', type=int, default=20)
 parser.add_argument('--coco_mode', type=int, default=-1)

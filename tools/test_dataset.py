@@ -21,7 +21,6 @@ from utils import *
 from vocab import Vocabulary
 from datasets.loader import caption_loader, caption_collate_fn
 from datasets.loader import region_loader, region_collate_fn
-from datasets.loader import paragraph_loader, paragraph_collate_fn
 
 from datasets.vg import vg
 from visual_genome.local import save_scene_graphs_by_id, add_attrs_to_scene_graphs
@@ -143,21 +142,22 @@ def test_region_loader(config):
 
 
 def test_paragraph_loader(config):
+    config.paragraph_model = True
+
     db = vg(config, 'train')
     # db = coco(config, 'train')
-    loaddb = paragraph_loader(db)
+    loaddb = region_loader(db)
     loader = DataLoader(loaddb,
         batch_size=config.batch_size,
-        shuffle=True, num_workers=config.num_workers, collate_fn=paragraph_collate_fn)
+        shuffle=True, num_workers=config.num_workers, collate_fn=region_collate_fn)
 
-    output_dir = osp.join(config.model_dir, 'test_paragraph_loader')
+    output_dir = osp.join(config.model_dir, 'test_region_loader')
     maybe_create(output_dir)
     
-
     start = time()
     plt.switch_backend('agg')
     for cnt, batched in enumerate(loader):
-        # print('scene_inds', batched['scene_inds'])
+        print('scene_inds', batched['scene_inds'])
         sent_inds = batched['sent_inds'].long()
         sent_msks = batched['sent_msks'].long()
         widths  = batched['widths']
@@ -176,8 +176,8 @@ def test_paragraph_loader(config):
         print('region_clses', region_clses.size())
         print('region_masks', region_masks.size())
         print('clses', torch.min(region_clses), torch.max(region_clses))
-        # print('widths', widths)
-        # print('heights', heights)
+        print('widths', widths)
+        print('heights', heights)
 
         for i in range(len(sent_inds)):
             # print('####')
@@ -196,11 +196,10 @@ def test_paragraph_loader(config):
             layouts = db.render_regions_as_output(entry, bg=cv2.resize(color, (config.visu_size[0], config.visu_size[0]))[:,:,::-1])
             
             fig = plt.figure(figsize=(32, 16))
-            cap = captions[i] + '\n'
-            sid = ' '.join([str(x.data.item()) for x in sent_inds[i]])
-            plt.suptitle(cap + sid)
             for j in range(min(14, len(layouts))):
                 plt.subplot(3, 5, j+1)
+                if j < config.max_turns:
+                    plt.title(captions[i][j] + '\n' + ' '.join([str(x.data.item()) for x in sent_inds[i, j]]) + '\n' + ' '.join([str(x.data.item()) for x in sent_msks[i, j]]))
                 plt.imshow(layouts[j].astype(np.uint8))
                 plt.axis('off')
             plt.subplot(3, 5, 15)

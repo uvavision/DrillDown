@@ -50,7 +50,10 @@ class ImageModel(nn.Module):
         # encoding context
         # first_hidden = img_feats.new_zeros(self.cfg.n_rnn_layers, img_feats.size(0), self.cfg.n_feature_dim, requires_grad=True)
         # txt_feats, _ = self.ctx_enc(sent_feats, first_hidden)
-        txt_feats, _ = self.ctx_enc(sent_feats)
+        if self.cfg.use_txt_context:
+            txt_feats, _ = self.ctx_enc(sent_feats)
+        else:
+            txt_feats = sent_feats
 
         if self.cfg.l2_norm:
             txt_feats = l2norm(txt_feats)

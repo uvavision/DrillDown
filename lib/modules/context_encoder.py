@@ -134,7 +134,8 @@ class ContextEncoder(nn.Module):
         if not self.cfg.use_txt_context:
             #TODO: do NOT use updater?
             bsize, nturns, fsize = input_feats.size()
-            output_feats = self.updater(input_feats, hiddens.view(bsize, 1, fsize).expand(bsize, nturns, fsize))
+            output_feats = input_feats # For paragraph model
+            # output_feats = self.updater(input_feats, hiddens.view(bsize, 1, fsize).expand(bsize, nturns, fsize))
             return output_feats, None, None, None
         else:
             if self.cfg.instance_dim < 2:

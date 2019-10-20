@@ -114,12 +114,18 @@ class Ranker(object):
                 for j in range(tgt_bsize):
                     cur_scores[rank_inds[j]] = j 
                 rank_scores.append(cur_scores)
-                
-            rank_scores = torch.mean(torch.cat(rank_scores, 0), 0)
+            rank_scores = torch.stack(rank_scores, 0)
 
-            inds = torch.argsort(rank_scores, dim=-1, descending=True) 
-            r = torch.eq(inds, gt_inds[txt_id]).nonzero()[0]
-            all_ranks.append(r)
-
+            accu_scores = rank_scores.clone()
+            rank_per_turn = []
+            for turn in range(nturns):
+                accu_scores = torch.mean(rank_scores[:(turn+1),:].view(-1, tgt_bsize), 0)
+                inds = torch.argsort(accu_scores, dim=-1, descending=True) 
+                r = torch.eq(inds, gt_inds[txt_id]).nonzero()[0]
+                rank_per_turn.append(r)
+            rank_per_turn = torch.cat(rank_per_turn, 0)
+            all_ranks.append(rank_per_turn)
+        all_ranks = torch.stack(all_ranks, 0)
+        print('all_ranks', all_ranks.size())
         return all_ranks
         
