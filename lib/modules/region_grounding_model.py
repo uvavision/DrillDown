@@ -72,19 +72,33 @@ class RegionGroundingModel(nn.Module):
         if self.cfg.cuda:
             gt_inds = gt_inds.cuda()
         ranker = self.net.ctx_enc.ranker
-        ranks, top5_inds = ranker.compute_rank(txt_feats, img_feats, img_masks, gt_inds)
-        ssize, nturns = ranks.size()
-        metrics = {}
-        for turn in range(nturns):
-            ranks_np = ranks[:, turn].cpu().data.numpy()
-            r1 = 100.0 * len(np.where(ranks_np < 1)[0])/ssize
-            r5 = 100.0 * len(np.where(ranks_np < 5)[0])/ssize
-            r10 = 100.0 * len(np.where(ranks_np < 10)[0])/ssize
-            medr = np.floor(np.median(ranks_np)) + 1
-            meanr = ranks_np.mean() + 1
-            metrics[turn] = (np.array([r1, r5, r10, medr, meanr]).astype(np.float64)).tolist()
-        top5_inds = top5_inds.cpu().data.numpy()
-        return metrics, top5_inds
+        if self.cfg.rank_fusion:
+            ranks = ranker.compute_rank_late_ranks_fusion(txt_feats, img_feats, img_masks, gt_inds)
+            ssize, nturns = ranks.size()
+            metrics = {}
+            for turn in range(nturns):
+                ranks_np = ranks[:, turn].cpu().data.numpy()
+                r1 = 100.0 * len(np.where(ranks_np < 1)[0])/ssize
+                r5 = 100.0 * len(np.where(ranks_np < 5)[0])/ssize
+                r10 = 100.0 * len(np.where(ranks_np < 10)[0])/ssize
+                medr = np.floor(np.median(ranks_np)) + 1
+                meanr = ranks_np.mean() + 1
+                metrics[turn] = (np.array([r1, r5, r10, medr, meanr]).astype(np.float64)).tolist()
+            return metrics, None
+        else:
+            ranks, top5_inds = ranker.compute_rank(txt_feats, img_feats, img_masks, gt_inds)
+            ssize, nturns = ranks.size()
+            metrics = {}
+            for turn in range(nturns):
+                ranks_np = ranks[:, turn].cpu().data.numpy()
+                r1 = 100.0 * len(np.where(ranks_np < 1)[0])/ssize
+                r5 = 100.0 * len(np.where(ranks_np < 5)[0])/ssize
+                r10 = 100.0 * len(np.where(ranks_np < 10)[0])/ssize
+                medr = np.floor(np.median(ranks_np)) + 1
+                meanr = ranks_np.mean() + 1
+                metrics[turn] = (np.array([r1, r5, r10, medr, meanr]).astype(np.float64)).tolist()
+            top5_inds = top5_inds.cpu().data.numpy()
+            return metrics, top5_inds
 
     def demo_step(self, sentence, all_captions, img_feats, img_masks, db, gt_ind=0):
         all_captions.append(sentence)

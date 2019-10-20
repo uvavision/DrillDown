@@ -87,7 +87,6 @@ def paint_box(ctx, color, box):
     # ctx.fill()
 
 
-
 def paint_txt(ctx, txt, box):
     # Color
     ctx.set_source_rgb(0, 0, 0)
@@ -268,9 +267,9 @@ def l1norm(X):
 
 
 def reduce_similarities(sims, msks, mode):
-    if mode == 1:
+    if mode == 'max':
         sims = torch.max(sims * msks, -1)[0]
-    elif mode == 2:
+    elif mode == 'mean':
         sims = torch.sum(sims * msks, -1)/(torch.sum(msks, -1))
     return sims
 

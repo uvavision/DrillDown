@@ -150,7 +150,7 @@ def test_paragraph_loader(config):
         batch_size=config.batch_size,
         shuffle=True, num_workers=config.num_workers, collate_fn=paragraph_collate_fn)
 
-    output_dir = osp.join(config.model_dir, 'test_region_loader')
+    output_dir = osp.join(config.model_dir, 'test_paragraph_loader')
     maybe_create(output_dir)
     
 
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     # save_scene_graphs_by_id(data_dir='../data/vg/', image_data_dir='../data/vg/by-id/')
     # test_vg_dataset(config)
     # test_caption_loader(config)
-    # test_region_loader(config)
-    test_paragraph_loader(config)
+    test_region_loader(config)
+    # test_paragraph_loader(config)
     # check_region_clses(config)
     # test_coco_dataset(config)

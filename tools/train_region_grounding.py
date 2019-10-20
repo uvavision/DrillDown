@@ -60,8 +60,8 @@ if __name__ == '__main__':
         torch.cuda.manual_seed_all(config.seed)
     prepare_directories(config)
 
-    # overfit_model(config)
-    train_model(config)
+    overfit_model(config)
+    # train_model(config)
     # sample_cache_results(config)
     # test_model(config)
     # dump_trained_features(config)

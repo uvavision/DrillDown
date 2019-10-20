@@ -54,6 +54,7 @@ class GroundingLoss(nn.Module):
         # similarities: (bsize, *, nregions)
         scores = self.pairwise_similarity_to_score(similarities, img_masks)
         similarities = torch.sum(similarities * scores, dim=-1)
+
         # similarities: (bsize, *)
         if self.cfg.instance_dim > 1:
             similarities = similarities.view(bsize, bsize, nturns, ninsts)
@@ -63,6 +64,7 @@ class GroundingLoss(nn.Module):
             similarities = reduce_similarities(similarities, sim_masks, self.cfg.sim_reduction_mode)
         else:
             similarities = similarities.view(bsize, bsize, nturns)
+        
         return similarities # (bsize, bsize, nturns)
 
     def debug_compute_batch_mutual_similarity(self, img_feats, img_masks, txt_feats):
@@ -127,7 +129,7 @@ class GroundingLoss(nn.Module):
             - **txt_masks** (bsize, nturns)
             - **reduce_mode**
                 1: per turn contrastive loss
-                2: rolling contrastive loss
+                2: accumulative contrastive loss
         Returns
             - loss
         """

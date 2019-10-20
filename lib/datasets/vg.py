@@ -65,7 +65,7 @@ class vg(object):
         return filtered_scenedb
         
     def load_classes(self):
-        self.classes = {0: '__background__'}
+        self.classes = {0: '__background__'} # each entry contains a list of names, except the '__background__' one
         self.class_to_ind = {}
         self.class_to_ind['__background__'] = 0
         with open(osp.join(self.cache_dir, 'vg_objects_vocab_1600.txt')) as f:
@@ -78,7 +78,7 @@ class vg(object):
                 count += 1
     
     def load_attributes(self):
-        self.attributes = {0: '__no_attribute__'} 
+        self.attributes = {0: '__no_attribute__'} # each entry contains a list of names, except the '__no_attribute__' one
         self.attribute_to_ind = {}
         self.attribute_to_ind['__no_attribute__'] = 0
         with open(osp.join(self.cache_dir, 'vg_attributes_vocab_1000.txt')) as f:
@@ -91,7 +91,7 @@ class vg(object):
                 count += 1 
 
     def load_relations(self):
-        self.relations = {0: '__no_relation__'}
+        self.relations = {0: '__no_relation__'} # each entry contains a list of names, except the '__no_relation__' one
         self.relation_to_ind = {}
         self.relation_to_ind['__no_relation__'] = 0
         with open(osp.join(self.cache_dir, 'vg_relations_vocab_500.txt')) as f:
@@ -119,8 +119,8 @@ class vg(object):
                 sg = self.load_sg_annotation(image_index)
                 scenedb[image_index] = sg
             # sample negations
-            # experiments on negation, could ignore
-            # I keep it here for now in case removing it will mess up other parts of the codes (e.g. dataloader)
+            # experiments on negation, can ignore
+            # keep it here for now in case removing it will mess up other parts of the codes (e.g. dataloader)
             if self.cfg.negation > 0:
                 scenedb = self.sample_negative_objects(scenedb, self.cfg.max_turns//2+1)
             with open(cache_file, 'wb') as fid:
@@ -204,8 +204,7 @@ class vg(object):
                         }
 
         rg_path = osp.join(self.root_dir, 'rg_jsons', '%d.json'%image_index)
-        with open(rg_path, 'r') as fid:
-            region_data = json.load(fid)
+        region_data = json_load(rg_path)
         regions = {}
         for r in self.filter_duplicate_regions(region_data['regions']):
             regions[int(r['region_id'])] = r

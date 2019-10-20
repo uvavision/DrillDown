@@ -131,8 +131,7 @@ class RegionGroundingTrainer(object):
             ##################################################################
             ## Checkpoint
             ##################################################################
-            # if self.cfg.rl_finetune == 0 and self.cfg.coco_mode < 0:
-            if False:
+            if self.cfg.rl_finetune == 0 and self.cfg.coco_mode < 0:
                 if min_val_loss > current_val_loss:
                     min_val_loss = current_val_loss
                     self.save_checkpoint(epoch)

@@ -16,9 +16,9 @@ parser = argparse.ArgumentParser()
 ##################################################################
 # To be tuned
 ##################################################################
-parser.add_argument('--use_txt_context', type=str2bool, default=False)
+parser.add_argument('--use_txt_context', type=str2bool, default=False, help='whether to incorporate query history')
 parser.add_argument('--n_feature_dim', type=int, default=256, help='dimension of the image and language features')
-parser.add_argument('--instance_dim',  type=int, default=1, help='state dimensions')
+parser.add_argument('--instance_dim',  type=int, default=0, help='state dimensions')
 parser.add_argument('--rl_finetune',   type=int, default=0, help='reinforced mode')
 parser.add_argument('--policy_mode',   type=int, default=0, help='policy mode')
 parser.add_argument('--explore_mode',  type=int, default=2, help='explore mode')
@@ -27,16 +27,17 @@ parser.add_argument('--policy_weight', type=float, default=0.1)
 parser.add_argument('--l2_norm', type=str2bool, default=True, help='whether to normalize the feature vectors')
 parser.add_argument('--subspace_alignment_mode', type=int, default=0)
 parser.add_argument('--loss_reduction_mode', type=int, default=1)
-parser.add_argument('--sim_reduction_mode', type=int, default=2)
+parser.add_argument('--sim_reduction_mode', type=str, default='mean')
 parser.add_argument('--temperature_lambda', type=float, default=9)
 parser.add_argument('--lse_lambda', type=float, default=20)
 parser.add_argument('--negation', type=int, default=0)
 parser.add_argument('--tirg_rnn', type=str2bool, default=True)
-parser.add_argument('--use_soft_ctx_encoder', type=str2bool, default=True)
+parser.add_argument('--use_soft_ctx_encoder', type=str2bool, default=False)
 
 parser.add_argument('--cut_off_steps', type=int, default=20)
 parser.add_argument('--coco_mode', type=int, default=-1)
 parser.add_argument('--cross_attn', type=str2bool, default=False)
+parser.add_argument('--rank_fusion', type=str2bool, default=False)
 
 
 ##################################################################
@@ -70,7 +71,7 @@ parser.add_argument('--UNK_idx', type=int, default=3)
 # Model
 ##################################################################
 parser.add_argument('--max_violation',   type=str2bool, default=True)
-parser.add_argument('--use_img_context', type=str2bool, default=False, help='whether to use image contexts')
+parser.add_argument('--use_img_context', type=str2bool, default=False, help='whether to use retrieved image history')
 parser.add_argument('--attn_type', type=str, default='general')
 
 

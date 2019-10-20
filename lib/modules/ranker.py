@@ -89,7 +89,7 @@ class Ranker(object):
         if tgt_bsize % bsize > 0:
             nstep += 1
 
-        all_ranks, all_top5_inds = [], []
+        all_ranks = []
         # compute the rank of each query
         for txt_id in range(src_bsize):
             tmp_txt_feats = txt_feats[txt_id].unsqueeze(0)
@@ -102,9 +102,7 @@ class Ranker(object):
                 curr_step_sims = self.criterion.compute_pairwise_similarity(curr_img_feats, curr_img_masks, curr_txt_feats)
                 curr_step_scores = self.criterion.pairwise_similarity_to_score(curr_step_sims, curr_img_masks)
                 curr_step_sims = torch.sum(curr_step_sims * curr_step_scores, -1)
-                curr_sims = curr_step_sims.clone().float()
-                del curr_step_sims
-                sim_list.append(curr_sims)
+                sim_list.append(curr_step_sims)
             sim_list = torch.cat(sim_list, 0)
             # sim_list: (tgt_size, nturns)
 
@@ -116,9 +114,8 @@ class Ranker(object):
                 for j in range(tgt_bsize):
                     cur_scores[rank_inds[j]] = j 
                 rank_scores.append(cur_scores)
-
-            rank_scores = torch.cat(rank_scores, 0)
-            rank_scores = torch.mean(rank_scores, 0)
+                
+            rank_scores = torch.mean(torch.cat(rank_scores, 0), 0)
 
             inds = torch.argsort(rank_scores, dim=-1, descending=True) 
             r = torch.eq(inds, gt_inds[txt_id]).nonzero()[0]

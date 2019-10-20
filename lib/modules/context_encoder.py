@@ -132,6 +132,7 @@ class ContextEncoder(nn.Module):
         input_feats = txt_feats
         
         if not self.cfg.use_txt_context:
+            #TODO: do NOT use updater?
             bsize, nturns, fsize = input_feats.size()
             output_feats = self.updater(input_feats, hiddens.view(bsize, 1, fsize).expand(bsize, nturns, fsize))
             return output_feats, None, None, None
@@ -162,11 +163,9 @@ class ContextEncoder(nn.Module):
                                 instance_inds = ((i%self.cfg.instance_dim) * query_feats.new_ones(bsize)).long()
                                 logits = instance_inds.new_ones(bsize, self.cfg.instance_dim).float()
                             else:
-                                instance_inds, logits = self.policy(
-                                    query_feats.detach(), 
-                                    current_hiddens.detach(), 
-                                    sample_mode)
+                                instance_inds, logits = self.policy(query_feats.detach(), current_hiddens.detach(), sample_mode)
                         elif sample_mode == 5:
+                            # rollout greedy search
                             instance_inds, rewards = \
                                 self.rollout_search(
                                     i, nturns, 
@@ -276,7 +275,7 @@ class ContextEncoder(nn.Module):
             # rewards: (bsize, ninsts)
             rewards, instance_inds = torch.max(rewards, -1)
 
-            # hack the first 5 steps
+            # the first instance_dim steps always use empty states
             if current_turn < self.cfg.instance_dim:
                 instance_inds = (current_turn * rewards.new_ones(bsize)).long()
             
@@ -287,11 +286,12 @@ class SoftContextEncoder(nn.Module):
     def __init__(self, config):
         super(SoftContextEncoder, self).__init__()
         self.cfg = config
+        self.ranker = Ranker(self.cfg)
 
         self.project = nn.ConvTranspose1d(
             in_channels=self.cfg.n_feature_dim, 
-            out_channels = self.cfg.n_feature_dim, 
-            kernel_size = self.cfg.instance_dim, 
+            out_channels=self.cfg.n_feature_dim, 
+            kernel_size=self.cfg.instance_dim, 
             stride=1, 
             padding=0, 
             output_padding=0, 
@@ -299,16 +299,6 @@ class SoftContextEncoder(nn.Module):
             bias=False, 
             dilation=1)
         
-        # self.z_gate = nn.Conv1d(
-        #     in_channels = 2 * self.cfg.n_feature_dim,
-        #     out_channels = self.cfg.n_feature_dim, 
-        #     kernel_size = 1, 
-        #     stride=1, 
-        #     padding=0, 
-        #     dilation=1, 
-        #     groups=1, 
-        #     bias=True)
-
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=2*self.cfg.n_feature_dim, 
             nhead=4, 
@@ -327,6 +317,16 @@ class SoftContextEncoder(nn.Module):
             nn.TransformerEncoder(encoder_layer=encoder_layer, num_layers=1),
             nn.Linear(2*self.cfg.n_feature_dim, self.cfg.n_feature_dim)
         )
+
+        # self.z_gate = nn.Conv1d(
+        #     in_channels = 2 * self.cfg.n_feature_dim,
+        #     out_channels = self.cfg.n_feature_dim, 
+        #     kernel_size = 1, 
+        #     stride=1, 
+        #     padding=0, 
+        #     dilation=1, 
+        #     groups=1, 
+        #     bias=True)
 
         # self.r_gate = nn.Conv1d(
         #     in_channels = 2 * self.cfg.n_feature_dim,
