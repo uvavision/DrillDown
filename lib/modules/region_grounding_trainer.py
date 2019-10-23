@@ -304,7 +304,7 @@ class RegionGroundingTrainer(object):
 
     def load_pretrained_net(self, pretrained_name):
         cache_dir = osp.join(self.cfg.data_dir, 'caches')
-        pretrained_path = osp.join(cache_dir, 'region_grounding_ckpts', pretrained_name+'.pkl')
+        pretrained_path = osp.join(cache_dir, 'region_ckpts', pretrained_name+'.pkl')
         assert osp.exists(pretrained_path)
         if self.cfg.cuda:
             states = torch.load(pretrained_path)
