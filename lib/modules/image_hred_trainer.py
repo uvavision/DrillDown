@@ -265,7 +265,7 @@ class ImageHREDTrainer(object):
             
     def save_checkpoint(self, epoch):
         print(" [*] Saving checkpoints...")
-        checkpoint_dir = osp.join(self.cfg.model_dir, 'image_hred_ckpts')
+        checkpoint_dir = osp.join(self.cfg.model_dir, 'image_ckpts')
         if not osp.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
         states = {
