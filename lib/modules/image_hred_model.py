@@ -63,7 +63,6 @@ class ImageHREDModel(nn.Module):
         gt_inds = torch.arange(0, ssize).long().view(-1, 1)
         # if self.cfg.cuda:
         #     gt_inds = gt_inds.cuda()
-
         metrics = {}
         caches_results = {}
         ranks_per_turns = []
@@ -79,13 +78,15 @@ class ImageHREDModel(nn.Module):
                 sorted_sim = sorted_sim.cpu().data.numpy().flatten()
                 for j in range(ssize):
                     ranks[i, sorted_sim[j]] = j+1
-            ranks_per_turns.append(np.stack(ranks, 0))
+            ranks_per_turns.append(ranks)
+            print('rank fusion: ', turn, ranks.shape)
         ranks_per_turns = np.stack(ranks_per_turns, -1)
         accu_ranks = ranks_per_turns.copy()
         for turn in range(1, nturns):
             accu_ranks[:,:,turn] = np.mean(ranks_per_turns[:,:,:(turn+1)], -1)
+        print('accu_ranks.shape', accu_ranks.shape)
         for turn in range(nturns):
-            sorted_inds = torch.argsort(torch.from_numpy(accu_ranks), dim=-1, descending=True) 
+            sorted_inds = torch.argsort(torch.from_numpy(accu_ranks[:,:,turn]), dim=1, descending=False) 
             caches_results[turn] = sorted_inds[:,:5].cpu().data.numpy()
             ranks = torch.argmax(torch.eq(sorted_inds, gt_inds).float(), dim=-1)
             ranks = ranks.cpu().data.numpy()
