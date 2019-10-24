@@ -111,8 +111,10 @@ class Ranker(object):
                 sim = sim_list[:, turn]
                 rank_inds = torch.argsort(sim, dim=-1, descending=True) 
                 cur_scores = sim.new_zeros((tgt_bsize,))
-                for j in range(tgt_bsize):
-                    cur_scores[rank_inds[j]] = j+1
+                order_inds = torch.range(tgt_bsize).to(cur_scores.device) + 1
+                cur_scores[rank_inds] = order_inds
+                # for j in range(tgt_bsize):
+                #     cur_scores[rank_inds[j]] = j+1
                 rank_scores.append(cur_scores)
             rank_scores = torch.stack(rank_scores, 0)
             print('rank_scores', rank_scores.size())
