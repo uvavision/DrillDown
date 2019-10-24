@@ -3,6 +3,7 @@
 import cv2, random
 import json, pickle
 import numpy as np
+from scipy import stats
 
 import torch
 import torch.nn as nn
