@@ -111,7 +111,7 @@ class Ranker(object):
                 sim = sim_list[:, turn]
                 rank_inds = torch.argsort(sim, dim=-1, descending=True) 
                 cur_scores = sim.new_zeros((tgt_bsize,))
-                order_inds = torch.range(start=0, end=tgt_bsize).to(cur_scores.device) + 1
+                order_inds = torch.range(start=0, end=(tgt_bsize-1)).to(cur_scores.device) + 1
                 cur_scores[rank_inds] = order_inds
                 # for j in range(tgt_bsize):
                 #     cur_scores[rank_inds[j]] = j+1
