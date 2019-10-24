@@ -61,8 +61,8 @@ class ImageHREDModel(nn.Module):
         ssize, nturns, fsize = txt_feats.size()
         ssize, fsize = img_feats.size()
         gt_inds = torch.arange(0, ssize).long().view(-1, 1)
-        if self.cfg.cuda:
-            gt_inds = gt_inds.cuda()
+        # if self.cfg.cuda:
+        #     gt_inds = gt_inds.cuda()
 
         metrics = {}
         caches_results = {}
@@ -85,7 +85,7 @@ class ImageHREDModel(nn.Module):
         for turn in range(1, nturns):
             accu_ranks[:,:,turn] = np.mean(ranks_per_turns[:,:,:(turn+1)], -1)
         for turn in range(nturns):
-            sorted_inds = torch.argsort(accu_ranks, dim=-1, descending=True) 
+            sorted_inds = torch.argsort(torch.from_numpy(accu_ranks), dim=-1, descending=True) 
             caches_results[turn] = sorted_inds[:,:5].cpu().data.numpy()
             ranks = torch.argmax(torch.eq(sorted_inds, gt_inds).float(), dim=-1)
             ranks = ranks.cpu().data.numpy()
