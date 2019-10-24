@@ -71,11 +71,12 @@ class ImageHREDModel(nn.Module):
         for turn in range(nturns):
             curr_txt_feats = txt_feats[:, turn]
             sim = curr_txt_feats.mm(img_feats.t())
-            sim = sim.cpu().data.numpy()
+            # sim = sim.cpu().data.numpy()
             # ranks = [np.array([stats.percentileofscore(sim[i], j) for j in sim[i]]) for i in range(len(sim))]
             ranks = np.zeros((ssize, ssize))
             for i in range(ssize):
-                sorted_sim = torch.argsort(sim[i], dim=-1, descending=True).flatten()
+                sorted_sim = torch.argsort(sim[i], dim=-1, descending=True)
+                sorted_sim = sorted_sim.cpu().data.numpy().flatten()
                 for j in range(ssize):
                     ranks[i, sorted_sim[j]] = j+1
             ranks_per_turns.append(np.stack(ranks, 0))
