@@ -81,6 +81,7 @@ class ImageHREDModel(nn.Module):
             ranks_per_turns.append(ranks)
             print('rank fusion: ', turn, ranks.shape)
         ranks_per_turns = np.stack(ranks_per_turns, -1)
+        # rank fusion
         accu_ranks = ranks_per_turns.copy()
         for turn in range(1, nturns):
             accu_ranks[:,:,turn] = np.mean(ranks_per_turns[:,:,:(turn+1)], -1)
