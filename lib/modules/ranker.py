@@ -117,7 +117,7 @@ class Ranker(object):
                 #     cur_scores[rank_inds[j]] = j+1
                 rank_scores.append(cur_scores)
             rank_scores = torch.stack(rank_scores, 0)
-            print('rank_scores', rank_scores.size())
+            # print('rank_scores', rank_scores.size())
 
             rank_per_turn = []
             for turn in range(nturns):
