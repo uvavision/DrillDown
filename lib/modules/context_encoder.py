@@ -20,6 +20,7 @@ class PolicyNet(nn.Module):
         super(PolicyNet, self).__init__()
         self.cfg = config
         if self.cfg.policy_mode == 0:
+            # 3 FC layers
             self.general = nn.Sequential(
                 nn.Linear(2 * self.cfg.n_feature_dim, self.cfg.n_feature_dim), 
                 nn.ReLU(),
@@ -28,12 +29,14 @@ class PolicyNet(nn.Module):
                 nn.Linear(self.cfg.n_feature_dim, 1),
                 nn.ReLU())
         elif self.cfg.policy_mode == 1:
+            # Weird design, not sure why I came up with this
             self.project = nn.Linear(self.cfg.n_feature_dim, self.cfg.n_feature_dim, bias=False)
             ws = torch.rand(2) 
             if self.cfg.cuda:
                 ws = ws.cuda()
             self.ws = nn.Parameter(ws)
         elif self.cfg.policy_mode == 2:
+            # 3 FC layers + a thresholding
             self.general = nn.Sequential(
                 nn.Linear(2 * self.cfg.n_feature_dim, self.cfg.n_feature_dim), 
                 nn.ReLU(),
@@ -84,11 +87,13 @@ class ContextEncoder(nn.Module):
         self.cfg = config
         self.ranker = Ranker(self.cfg)
         self.criterion = GroundingLoss(self.cfg)
+        ## Actually they are the same
         if self.cfg.tirg_rnn:
             self.updater = TIRGRNNCell(self.cfg, self.cfg.n_feature_dim, self.cfg.n_feature_dim)
         else:
             self.updater = nn.GRU(self.cfg.n_feature_dim, self.cfg.n_feature_dim, 1, batch_first=True)
         if self.cfg.use_txt_context:
+            # Whether to use a context encoder
             if self.cfg.instance_dim > 1:
                 self.policy = PolicyNet(self.cfg)
 
@@ -139,10 +144,12 @@ class ContextEncoder(nn.Module):
             return output_feats, None, None, None
         else:
             if self.cfg.instance_dim < 2:
+                # one dimensional context
                 self.updater.flatten_parameters()
                 output_feats, next_hiddens = self.updater(input_feats, hiddens.unsqueeze(0))
                 return output_feats, next_hiddens, None, None
             else:
+                # two dimensional context
                 bsize, nturns, input_dim = input_feats.size()
                 bsize, ninsts, hidden_dim = hiddens.size()
                 current_hiddens = hiddens
@@ -166,7 +173,9 @@ class ContextEncoder(nn.Module):
                             else:
                                 instance_inds, logits = self.policy(query_feats.detach(), current_hiddens.detach(), sample_mode)
                         elif sample_mode == 5:
+                            ###################################################
                             # rollout greedy search
+                            ###################################################
                             instance_inds, rewards = \
                                 self.rollout_search(
                                     i, nturns, 
@@ -285,6 +294,9 @@ class ContextEncoder(nn.Module):
 
 class SoftContextEncoder(nn.Module):
     def __init__(self, config):
+        #########################################
+        ## Can be ignored, does not help
+        #########################################
         super(SoftContextEncoder, self).__init__()
         self.cfg = config
         self.ranker = Ranker(self.cfg)

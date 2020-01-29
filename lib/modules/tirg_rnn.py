@@ -14,6 +14,9 @@ import torch.nn.functional as F
 
 
 class TIRGRNNCell(nn.Module):
+    #############################################################
+    ## This is actually a GRU cell
+    #############################################################
     def __init__(self, config, input_size, hidden_size, bias=True):
         super(TIRGRNNCell, self).__init__()
         self.cfg = config
@@ -37,44 +40,10 @@ class TIRGRNNCell(nn.Module):
         new_h = (1.0 - z) * n + z * h
         return new_h
 
-
-# class TIRGRNNCell(nn.Module):
-#     def __init__(self, config, input_size, hidden_size, bias=True):
-#         super(TIRGRNNCell, self).__init__()
-#         self.cfg = config
-#         self.hidden_size = hidden_size
-#         self.tirg_gate = nn.Sequential(
-#             nn.Linear(input_size + hidden_size, hidden_size, bias=bias),
-#             nn.ReLU(),
-#             nn.Linear(hidden_size, hidden_size, bias=bias),
-#             nn.Sigmoid()
-#         )
-#         self.tirg_res = nn.Sequential(
-#             nn.Linear(input_size + hidden_size, hidden_size),
-#             nn.ReLU(),
-#             nn.Linear(hidden_size, hidden_size),
-#             nn.Sigmoid()
-#         )
-#         # wg = torch.rand(1)
-#         # wr = torch.rand(1)
-#         # if self.cfg.cuda:
-#         #     wg = wg.cuda()
-#         #     wr = wr.cuda()
-#         # self.wg = nn.Parameter(wg)
-#         # self.wr = nn.Parameter(wr)
-
-#     def forward(self, x, h):
-#         # x: [batch, input_size]
-#         # h: [batch, hidden_size]
-#         combined = torch.cat((x, h), dim=-1)
-#         # fgate = self.wg * self.tirg_gate(combined) * h 
-#         # fres = self.wr * self.tirg_res(combined)
-#         fgate = self.tirg_gate(combined) * h 
-#         fres = self.tirg_res(combined) * x
-#         return fgate + fres
-
-
 class TIRGRNN(nn.Module):
+    #############################################################
+    ## This is actually a GRU
+    #############################################################
     def __init__(self, config, input_size, hidden_size, num_layers, bias=True, dropout=0.0):
         super(TIRGRNN, self).__init__()
         self.cfg = config

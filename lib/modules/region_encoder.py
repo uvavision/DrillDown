@@ -16,13 +16,7 @@ class RegionEncoder(nn.Module):
         self.cfg = config
         if self.cfg.subspace_alignment_mode > 0:
             self.subspace_masking = nn.Sequential(nn.Embedding(self.cfg.n_categories, self.cfg.n_feature_dim))
-        # if self.cfg.subspace_alignment_mode == 1:
-        #     self.subspace_masking = nn.Sequential(nn.Embedding(self.cfg.n_categories, self.cfg.n_feature_dim))
-        # elif self.cfg.subspace_alignment_mode == 2:
-        #     self.subspace_masking = nn.Sequential(nn.Linear(2048, self.cfg.n_feature_dim))
         self.project = nn.Sequential(nn.Linear(2048, self.cfg.n_feature_dim))
-        # for param in self.parameters():
-        #     param.requires_grad = (self.cfg.rl_finetune == 0)
         self.init_weights()
     
     def init_weights(self):
@@ -42,12 +36,6 @@ class RegionEncoder(nn.Module):
                 masks = F.softmax(self.cfg.temperature_lambda * masks, dim=-1)
             else:
                 masks = l1norm(masks)
-            # if self.cfg.subspace_alignment_mode == 1:
-            #     masks = self.subspace_masking(region_clses)
-            #     masks = F.softmax(self.cfg.temperature_lambda * masks, dim=-1)
-            # else:
-            #     masks = self.subspace_masking(region_feats)
-            #     masks = F.softmax(self.cfg.temperature_lambda * masks, dim=-1)
             masked_feats = img_feats * masks
             return img_feats, masked_feats, masks
         else:
