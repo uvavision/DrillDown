@@ -8,7 +8,8 @@ exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
 ###############################################################
-# Some notes on the parameters:
+# Arguments:
+# use_txt_context: use context encoder or not
 # tirg_rnn: actually almost the same as GRU
 ###############################################################
 

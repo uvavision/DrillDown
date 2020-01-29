@@ -8,9 +8,8 @@ exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
 ###############################################################
-# Some notes on the parameters:
+# Arguments:
 # tirg_rnn: actually almost the same as GRU
-# loss_reduction_mode
 ###############################################################
 
 python ./tools/train_region.py --cuda --use_txt_context=True --num_workers=1 --loss_reduction_mode=1 --n_feature_dim=1280 --tirg_rnn=False --exp_name=vg_R-HRE_1280 
