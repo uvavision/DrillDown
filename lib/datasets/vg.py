@@ -282,7 +282,7 @@ class vg(object):
             return image_path_1
         elif osp.exists(image_path_2):
             return image_path_2
-        assert osp.exists(image_path_1), 'Path does not exist: {}'.format(image_path_1)
+        assert osp.exists(image_path_1), str(index) + '.jpg does not exist: {}'.format(image_path_1)
 
     def field_path_from_index(self, index, field, ext):
         return osp.join(self.root_dir, field, str(index) + '.' + ext)
