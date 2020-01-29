@@ -15,6 +15,4 @@ wget $image2 -O image2.zip
 echo "Unzipping..."
 unzip -q image2.zip -d data/vg
 
-find data/vg/VG_100K_2 -type f | xargs -J % mv % data/vg/VG_100K/
-
 rm image1.zip image2.zip
