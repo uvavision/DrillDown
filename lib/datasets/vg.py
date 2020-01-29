@@ -276,9 +276,13 @@ class vg(object):
         return split_img_inds
 
     def color_path_from_index(self, index):
-        image_path = osp.join(self.root_dir, 'VG_100K', str(index) + '.jpg')
-        assert osp.exists(image_path), 'Path does not exist: {}'.format(image_path)
-        return image_path
+        image_path_1 = osp.join(self.root_dir, 'VG_100K', str(index) + '.jpg')
+        image_path_2 = osp.join(self.root_dir, 'VG_100K_2', str(index) + '.jpg')
+        if osp.exists(image_path_1):
+            return image_path_1
+        elif osp.exists(image_path_2):
+            return image_path_2
+        assert osp.exists(image_path_1), 'Path does not exist: {}'.format(image_path_1)
 
     def field_path_from_index(self, index, field, ext):
         return osp.join(self.root_dir, field, str(index) + '.' + ext)
