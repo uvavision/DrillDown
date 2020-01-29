@@ -1,7 +1,7 @@
 #!/bin/bash
 
 scene_graph_xmls=www.cs.virginia.edu/~ft3ex/data/drilldown/sg_xmls.zip
-region_graph_jsons=www.cs.virginia.edu/~ft3ex/data/drilldown/rg_json.zip
+region_graph_jsons=www.cs.virginia.edu/~ft3ex/data/drilldown/rg_jsons.zip
 
 mkdir data/vg
 
@@ -11,8 +11,8 @@ echo "Unzipping..."
 unzip -q sg_xmls.zip -d data/vg/
 
 echo "Downloading region graph annotations"
-wget $region_graph_jsons -O rg_json.zip
+wget $region_graph_jsons -O rg_jsons.zip
 echo "Unzipping..."
-unzip -q rg_json.zip -d data/vg/
+unzip -q rg_jsons.zip -d data/vg/
 
-rm sg_xmls.zip rg_json.zip
+rm sg_xmls.zip rg_jsons.zip
