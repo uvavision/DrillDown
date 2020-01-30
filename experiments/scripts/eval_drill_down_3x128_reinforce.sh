@@ -13,4 +13,4 @@ echo Logging output to "$LOG"
 # explore_mode: use in lib/modules/context_encoder.py 
 # policy_mode: use in lib/modules/context_encoder.py
 ###############################################################
-time python ./tools/eval_region.py --cuda --use_txt_context=True --num_workers=1 --instance_dim=3 --n_feature_dim=128 --rl_finetune=2 --explore_mode=5 --policy_mode=0 --final_loss_mode=3 --lr=2e-5 --exp_name=vg_f128_i3_rl_test --pretrained=vg_f128_i3_rl_ckpt
+time python ./tools/eval_region.py --use_txt_context=True --num_workers=1 --instance_dim=3 --n_feature_dim=128 --rl_finetune=2 --explore_mode=5 --policy_mode=0 --final_loss_mode=3 --lr=2e-5 --exp_name=vg_f128_i3_reinforce_test --pretrained=vg_f128_i3_rl_ckpt
