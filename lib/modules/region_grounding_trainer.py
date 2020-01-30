@@ -24,6 +24,64 @@ from datasets.loader import region_loader, region_collate_fn
 from modules.region_grounding_model import RegionGroundingModel
 from vocab import Vocabulary
 
+import matplotlib
+matplotlib.use('Qt4Agg') 
+plt.switch_backend('agg')
+import seaborn as sns
+import pandas as pd
+
+
+def visualize(method, res, vis_path):
+    dataframe = {'Turn':[], 'Recall': [], 'Metric':[], 'Method': []}
+    for k, v in res.items():
+        dataframe['Turn'].extend([int(k)+1 for i in range(3)])
+        dataframe['Method'].extend([method for i in range(3)])
+        dataframe['Recall'].append(v[0])
+        dataframe['Metric'].append('R@1')
+        dataframe['Recall'].append(v[1])
+        dataframe['Metric'].append('R@5')
+        dataframe['Recall'].append(v[2])
+        dataframe['Metric'].append('R@10')
+
+    df = pd.DataFrame(data=dataframe)
+    flatui = ["#6a2c70"]
+    sns.set_palette(flatui)
+    dash_styles = [(4, 1.0)]
+
+    sns.set(style="darkgrid", font_scale=2.0)
+    sns_plot = sns.relplot(
+        x='Turn', 
+        y='Recall', 
+        hue='Method', 
+        size=None, 
+        style='Method', 
+        data=df, 
+        row=None, 
+        col='Metric', 
+        col_wrap=None, 
+        row_order=None, 
+        col_order=None, 
+        palette=flatui, 
+        hue_order=None, 
+        hue_norm=None, 
+        sizes=None, 
+        size_order=None, 
+        size_norm=None, 
+        markers=["v", "^", "<", ">", "o", "D"], 
+        dashes=dash_styles, 
+        style_order=None, 
+        legend='brief', 
+        kind='line', 
+        height=5, 
+        aspect=1, 
+        facet_kws={'sharey': True, 'sharex': True, 'xlim': (1, 10), 'ylim':(2.5, 92.5)}
+        )
+
+    # plt.legend(loc='best').set_draggable(True)
+    # plt.imshow(out)
+    plt.savefig(vis_path)
+    
+
 
 class RegionGroundingTrainer(object):
     def __init__(self, config):
@@ -200,7 +258,7 @@ class RegionGroundingTrainer(object):
         all_txt_masks = all_txt_feats.new_ones(all_txt_feats.size(0), all_txt_feats.size(1))
         
 
-        print('all_img_feats', all_img_feats.size())
+        # print('all_img_feats', all_img_feats.size())
         all_img_feats_np = all_img_feats.cpu().data.numpy()
         all_img_masks_np = all_img_masks.cpu().data.numpy()
         with open(osp.join(self.cfg.model_dir, 'img_features_%d.pkl'%self.cfg.n_feature_dim), 'wb') as fid:
@@ -210,12 +268,15 @@ class RegionGroundingTrainer(object):
         ##################################################################
         ## Evaluation
         ##################################################################
+        print('Evaluating the per-turn performance, may take a while.')
         metrics, caches_results = self.net.evaluate(all_img_feats, all_img_masks, all_txt_feats)
 
         with open(osp.join(self.cfg.model_dir, 'test_metrics.json'), 'w') as fp:
             json.dump(metrics, fp, indent=4, sort_keys=True)
         with open(osp.join(self.cfg.model_dir, 'test_caches.pkl'), 'wb') as fid:
             pickle.dump(caches_results, fid, pickle.HIGHEST_PROTOCOL)
+        
+        visualize(self.cfg.exp_name, metrics, osp.join(self.cfg.model_dir, 'evaluation.jpg'))
 
         return losses, metrics, caches_results
 
