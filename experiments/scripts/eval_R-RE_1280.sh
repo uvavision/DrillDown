@@ -13,4 +13,4 @@ echo Logging output to "$LOG"
 # tirg_rnn: actually almost the same as GRU
 ###############################################################
 
-python ./tools/eval_region.py --cuda --use_txt_context=False --paragraph_model=True --num_workers=1 --n_feature_dim=1280 --exp_name=vg_R-RE_1280_test --pretrained=vg_R-RE_f1280_ckpt
+python ./tools/eval_region.py --use_txt_context=False --paragraph_model=True --num_workers=1 --n_feature_dim=1280 --exp_name=vg_R-RE_1280_test --pretrained=vg_f1280_R-RE_ckpt

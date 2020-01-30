@@ -12,4 +12,4 @@ echo Logging output to "$LOG"
 # tirg_rnn: actually almost the same as GRU
 ###############################################################
 
-time python ./tools/eval_image.py  --cuda --use_txt_context=True --num_workers=1 --n_feature_dim=1280 --tirg_rnn=False --exp_name=vg_HRE_1280_test --pretrained=vg_f1280_HRE_ckpt
+time python ./tools/eval_image.py --use_txt_context=True --num_workers=1 --n_feature_dim=1280 --tirg_rnn=False --exp_name=vg_HRE_1280_test --pretrained=vg_f1280_HRE_ckpt

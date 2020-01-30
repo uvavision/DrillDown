@@ -13,4 +13,4 @@ echo Logging output to "$LOG"
 # loss_reduction_mode
 ###############################################################
 
-python ./tools/eval_region.py --cuda --use_txt_context=True --num_workers=1 --loss_reduction_mode=1 --n_feature_dim=1280 --tirg_rnn=False --exp_name=vg_R-HRE_1280_test --pretrained=vg_f1280_R-HRE_ckpt
+python ./tools/eval_region.py --use_txt_context=True --num_workers=1 --loss_reduction_mode=1 --n_feature_dim=1280 --tirg_rnn=False --exp_name=vg_R-HRE_1280_test --pretrained=vg_f1280_R-HRE_ckpt
