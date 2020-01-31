@@ -11,10 +11,10 @@ def maybe_create(dir_path):
 
 csv.field_size_limit(sys.maxsize)
 FIELDNAMES = ['image_id', 'image_w','image_h','num_boxes', 'boxes', 'features', 'class_inds']
-output_dir = '../data/coco/region_36_final'
+output_dir = '../data/vg/region_36_final'
 maybe_create(output_dir)
 
-infile = '../data/coco/coco_all.tsv'
+infile = '../data/vg/vg_all.tsv'
 with open(infile, "r+b") as tsv_in_file:
     reader = csv.DictReader(tsv_in_file, delimiter='\t', fieldnames = FIELDNAMES)
     count = 0
