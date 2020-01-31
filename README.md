@@ -71,7 +71,7 @@ If you find our paper/code useful, please consider citing:
 
 This project is licensed under the [MIT license](https://opensource.org/licenses/MIT):
 
-Copyright (c) 2019 University of Virginia, Fuwen Tan, Song Feng, Vicente Ordonez.
+Copyright (c) 2019 University of Virginia, Fuwen Tan, Paola Cascante-Bonilla, Xiaoxiao Guo, Hui Wu, Song Feng, Vicente Ordonez.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
