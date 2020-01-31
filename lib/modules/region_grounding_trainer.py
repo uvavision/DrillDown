@@ -25,7 +25,7 @@ from modules.region_grounding_model import RegionGroundingModel
 from vocab import Vocabulary
 
 import matplotlib
-matplotlib.use('Qt4Agg') 
+# matplotlib.use('Qt4Agg') 
 plt.switch_backend('agg')
 import seaborn as sns
 import pandas as pd
