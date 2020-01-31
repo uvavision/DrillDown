@@ -276,7 +276,7 @@ class RegionGroundingTrainer(object):
         with open(osp.join(self.cfg.model_dir, 'test_caches.pkl'), 'wb') as fid:
             pickle.dump(caches_results, fid, pickle.HIGHEST_PROTOCOL)
         
-        visualize(self.cfg.exp_name, metrics, osp.join(self.cfg.model_dir, 'evaluation.jpg'))
+        visualize(self.cfg.exp_name, metrics, osp.join(self.cfg.model_dir, 'evaluation.png'))
 
         return losses, metrics, caches_results
 
