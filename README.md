@@ -10,7 +10,7 @@ This paper explores the task of interactive image retrieval using natural langua
 ```bash
 conda create -n retrieval python=3.6    # Create a virtual environment
 source activate retrieval         	    # Activate virtual environment
-conda install jupyter scikit-image cython opencv seaborn nltk pycairo   # Install dependencies
+conda install jupyter scikit-image cython opencv seaborn nltk pycairo h5py  # Install dependencies
 python -m nltk.downloader all				    # Install NLTK data
 ```
 - Please also install [pytorch](http://pytorch.org/) 1.0 (or higher), torchVision, and torchtext
@@ -33,7 +33,7 @@ This will populate the `DrillDown/data` folder with `vg/sg_xmls` and `vg/rg_json
 ```Shell
 ./experiments/scripts/fetch_features.sh
 ```
-This will populate the `DrillDown/data` folder with `vg/global_features` and `vg/region_36_final`, which are global mean-pooled features and the region features of the images. The region features were extracted by a pretrained FasterRCNN model provided by https://github.com/peteanderson80/bottom-up-attention.
+This will populate the `DrillDown/data` folder with `vg/global_features` and `vg/region_36_final`, which are the global features and region features of the images. The global features were extracted from a pretrained ResNet101 model. The region features were extracted from a pretrained FasterRCNN model provided by https://github.com/peteanderson80/bottom-up-attention. Please see `tools/save_image_features.py`, the FasterRCNN repo, and `tools/save_region_features.py` for more details.
 
 - Download the pretrained models
 ```Shell
