@@ -1,7 +1,7 @@
 #!/bin/bash
 
-image_features=www.cs.virginia.edu/~ft3ex/data/drilldown/global_features.zip 
-region_features=www.cs.virginia.edu/~ft3ex/data/drilldown/region_36_final.zip
+image_features=https://www.cs.rice.edu/~vo9/fuwen/drilldown/global_features.zip 
+region_features=https://www.cs.rice.edu/~vo9/fuwen/drilldown/region_36_final.zip
 
 mkdir data/vg
 
