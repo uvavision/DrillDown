@@ -1,7 +1,7 @@
 #!/bin/bash
 
-scene_graph_xmls=www.cs.virginia.edu/~ft3ex/data/drilldown/sg_xmls.zip
-region_graph_jsons=www.cs.virginia.edu/~ft3ex/data/drilldown/rg_jsons.zip
+scene_graph_xmls=https://www.cs.rice.edu/~vo9/fuwen/drilldown/sg_xmls.zip
+region_graph_jsons=https://www.cs.rice.edu/~vo9/fuwen/drilldown/rg_jsons.zip
 
 mkdir data/vg
 
